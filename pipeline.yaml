@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
       - main
+      - prod
   paths:
     include:
       - databricks
@@ -14,7 +15,7 @@ resources:
      displayName: Project Specific Variable Templates
      type: git
      name: Global_Satellite/Global_Satellite
-     ref: main
+     ref: prod
 
 stages:
   - template: devops/ADB/CI/build_databricks.yml@VarTemplates
@@ -31,4 +32,12 @@ stages:
         varPath: /devops/config/common/variables.yml@VarTemplates
         envVarPath: /devops/config/dev/variables.yml@VarTemplates
         environment: Global_satellite_dev
+        agent_pool: windows-latest
+#prod DEPLOY
+  - ${{ if eq(variables['Build.SourceBranchName'], 'releases') }}:
+    - template: devops/ADB/CD/deploy_databricks.yml@Vartemplates
+      parameters:
+        varPath: /devops/config/common/variables.yml@VarTemplates
+        envVarPath: /devops/config/prod/variables.yml@VarTemplates
+        environment: Global_satellite_prod
         agent_pool: windows-latest
